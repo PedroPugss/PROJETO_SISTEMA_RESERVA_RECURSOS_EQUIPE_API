@@ -8,7 +8,7 @@
     <title>Sistemas de Reserva de Recursos</title>
     <link rel="stylesheet" href="style.css">
 
-    <!-- <script defer src="script.js"></script> -->
+    <script defer src="script.js"></script>
 </head>
 
 <body>
@@ -23,8 +23,11 @@
             </div>
 
             <div class="acoesNav">
-                <button class="botao" onclick="abrirLogin()">Entrar</button>
-                <button class="botao botaoPrimario" onclick="rolarParaRapido()">Nova Reserva</button>
+                <!-- <button class="botao" onclick="abrirLogin()">Entrar</button> -->
+                <!-- <button class="botao botaoPrimario" onclick="rolarParaRapido()">Nova Reserva</button> -->
+
+                <a href="#secLogin" class="botao">Entrar</a>
+                <a href="#secPesquisa" class="botao botaoPrimario">Nova Reserva</a>
             </div>
         </div>
     </header>
@@ -91,10 +94,85 @@
             </article>
         </section>
 
+        <!-- [Seções funcionais do SPRINT 2] -->
+        <section id="secLogin" class="cartao" aria-labelledby="titLogin">
+            <h2 id="titLogin">Acesso</h2>
+
+            <form id="formLogin" class="grade">
+                <label>
+                    Usuário
+                    <input id="campoUsuario" name="usuario" autocomplete="username" required>
+                </label>
+
+                <label>
+                    Senha
+                    <input id="campoSenha" name="senha" type="password" autocomplete="current-password" required>
+                </label>
+
+                <button class="botao botaoPrimario" type="submit">Entrar</button>
+                <p class="textoMutado">Dica: Qualquer usuário com senha de 3+ caractêres entra (simulação).</p>
+            </form>
+        </section>
+
+        <!-- [Seção de pesquisa; Separar consulta de Disponibilidade] -->
+        <section id="secPesquisa" class="cartao" aria-labelledby="titPesquisa">
+            <h2 id="titPesquisa">Pesquisar disponibilidade</h2>
+
+            <form action="" id="formPesquisa" class="grade duas">
+                <label>
+                    Recurso
+                    <select name="recurso" id="campoRecurso" required>
+                        <option value="">Selecione:</option>
+                        <option>Laboratório 01</option>
+                        <option>Laboratório 02</option>
+                        <option>Projetor 4k</option>
+                        <option>Espaço de Reuniões</option>
+                    </select>
+                </label>
+
+                <label>
+                    Data
+                    <input id="campoData" name="data" type="date" required>
+                </label>
+
+                <label>
+                    Horário
+                    <input id="campoHora" name="hora" type="time" required>
+                </label>
+
+                <button class="botao botaoPrimario" type="submit">Pesquisar</button>
+            </form>
+        </section>
+
+        <!-- [Seção de solicidação; Inserir RN, se for professor aprovada automaticamente a solicitação] -->
+        <section id="secSolicitar" class="cartao" aria-labelledby="titSolicitar">
+            <h2 id="titSolicitar">Solicitar reserva</h2>
+
+            <form id="formSolicitar" class="grade">
+                <label>
+                    Justificativa
+                    <input id="campoJustificativa" name="justificativa" placeholder="Descreva o uso:">
+                </label>
+
+                <button class="botao botaoPrimario" type="submit">Solicitar</button>
+            </form>
+
+            <p class="textoMutado">RN4 (Simulado): Logins contendo "prof" recebem aprovação automatica.</p>
+        </section>
+
+        <!-- [Seção de histórico] -->
+        <section id="secHistorico" class="cartao" aria-labelledby="titHistorico">
+            <h2 id="titHistorico">Minhas reservas</h2>
+
+            <ul id="listaReservas" class="lista" aria-live="polite">
+
+            </ul>
+        </section>
+
         <footer>
             <div class="container">
                 <small class="textoMutado">
-                    Sprint 1 - Prototipagem de Interface (HTML / CSS).
+                    Sprint 2 - Fluxo funcional (Login - Pesquisa - Solicidação - Histórico).
                     Próximo: Modelagem e persistência
                 </small>
             </div>
@@ -124,7 +202,9 @@
 
     <!-- <script src="script.js"></script> -->
 
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <!-- [Região de toast Acessível; Não bloqueante] -->
+
+    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 </body>
 
 </html>
