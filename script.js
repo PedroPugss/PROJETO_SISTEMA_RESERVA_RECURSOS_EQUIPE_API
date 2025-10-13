@@ -1,5 +1,41 @@
 // SCRIPT DO SPRINT 01
 
+// SCRIPT DO SPRINT 02 - Manter o que havia no SPRINT 01 e adicionar fluxo funcional
+
+// 1) Toast acessível (feedback não bloqueante)
+// Por que? Substitui o alert() por UX moderna e acessível
+
+const $toast = document.getElementById('toast');
+let __toastTimer = null;
+
+function mostrarToast(mensagem, tipo = "OK") {
+    // fallback - Se #toast não existir (Ambiente)
+    if (!$toast) {
+        alert(mensagem);
+        return;
+    }
+
+    $toast.classList.remove('warn', 'err', 'visivel');
+
+    if (tipo === 'warn') $toast.classList.add('warn');
+    if (tipo === 'err') $toast.classList.add('err');
+
+    $toast.textContent = mensagem;
+
+    void $toast.offsetWidth;
+    $toast.classList.add('visivel')
+
+    clearTimeout(__toastTimer);
+
+    __toastTimer = setTimeout(() => $toast.classList.remove('visivel'), 20);
+}
+
+/*
+======================================================
+====== Funções originais - SPRINT 01 (Mantidas) ======
+======================================================
+*/
+
 // Abre o modal
 function abrirLogin() {
     const modal = document.getElementById('modalLogin');
@@ -7,7 +43,8 @@ function abrirLogin() {
         modal.showModal();
     }
     else {
-        alert("Modal não suportado neste navegador")
+        // Alteração SPRINT 02: Usar toast no lugar de alert()
+        mostrarToast("Modal não suportado neste navegador", 'warn');
     }
 }
 
@@ -20,6 +57,7 @@ function rolarParaRapido() {
 }
 
 // Validação simples da reserva rápida
+// Fluxo do SPRINT 02 - Login, Pesquisa, Solicitar
 (function inicializarValidacao() {
     const form = document.querySelector('.formRapido');
     if (!form) return;
@@ -71,17 +109,121 @@ function rolarParaRapido() {
             campoInicio.style.borderColor = 'red';
             campoFim.style.borderColor = 'red';
 
-            alert("O horário final não compatível com o horário inicial!");
+            // Alteração SPRINT 02 - Trocar o alert pelo toast
+            mostrarToast("O horário final precisa ser maior que o horário inicial", 'warn');
             return;
         }
 
         if (!valido) {
-            alert("Por favor, preencha todos os campos obrigatórios");
+            mostrarToast("Por favor, preencha todos os campos obrigatórios", 'warn');
             return;
         }
 
         // Simulação (sucesso)
-        alert("Reserva simulada com sucesso! Integração real será feita nos próximos sprints");
+        mostrarToast("Reserva simulada com sucesso! Fluxo rápido/legado");
         form.reset();
     });
 })();
+
+/*
+========================================================================
+======              Ajudantes e estado (SPRINT 02)                ======
+====== ---------------------------------------------------------- ======
+====== Por que? Preparar o 'estado mínimo' e leitura por FormData ======
+========================================================================
+*/
+
+// Alteração SPRINT 02: helper para transformar FormData em objeto
+function dadosDoForm(form) {
+    return Object.fromEntries(new FormData(form).entries());
+}
+
+// Alteração SPRINT 02: Estado mínimo de aplicação (simulado)
+let usuarioAtual = null; // {login, professor: boolean}
+let ultimoFiltroPesquisa = null; // {recurso, data, horario}
+
+const reservas = []; // Histórico em memória
+
+/*
+==========================================================
+======      Menu ativo por Hash (Acessibilidade)    ======
+====== -------------------------------------------- ======
+====== Por que? Destacar a seção atual sem roteador ======
+==========================================================
+*/
+
+// Alteração do SPRINT 02: Destacar links ativos do menu
+const menuLinks = document.querySelectorAll('.menu a, header, .acoesNav a');
+
+function atualizarMenuAtivo() {
+    const hash = location.hash || '#secLogin';
+    menuLinks.forEach(a => {
+        const ativo = a.getAttribute('href') === hash;
+        a.setAttribute('aria-current', ativo ? 'true' : 'false');
+    });
+}
+
+window.addEventListener('hashchange', atualizarMenuAtivo);
+document.addEventListener('DOMContentLoaded', atualizarMenuAtivo);
+
+/*
+===================================================================================================================================================
+======                                    Fluxo Login, Pesquisa, Solicitar e Histórico (SPRINT 02)                                           ======
+====== ------------------------------------------------------------------------------------------------------------------------------------- ======
+====== Por que? Implementar o fluxo da SPRINT 02, com RN simulada: Usuários cujo login contêm "prof" com aprovação automática na solicitação ======
+===================================================================================================================================================
+*/
+
+// Alteração do SPRINT 02: Seletores das seções
+const formLogin = document.getElementById('formLogin');
+const formPesquisa = document.getElementById('formPesquisa');
+const formSolicitar = document.getElementById('formSolicitar');
+const listaReservas = document.getElementById('listaReservas');
+
+// 1. Login
+
+// Valida credenciais simples e define perfil simulado
+formLogin?.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const { usuario, senha } = dadosDoForm(formLogin);
+
+    if (!usuario || (senha || '').length < 3) {
+        mostrarToast("Usuário / Senha inválidos (mín 3 caracteres)");
+        return;
+    }
+
+    const professor = /prof/i.test(usuario); // RN4
+    usuarioAtual = { login: usuario, professor };
+
+    mostrarToast(`Bem-vindo, ${usuarioAtual.login}!`);
+    location.hash = '#secPesquisa';
+    atualizarMenuAtivo();
+});
+
+// 2. Pesquisar disponibilidade
+
+// Guarda filtro de pesquisa (Simulação de disponibilidade)
+formPesquisa?.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    if (!usuarioAtual) {
+        mostrarToast("Faça login antes de pesquisar", 'warn');
+        location.hash = '#secLogin';
+        atualizarMenuAtivo();
+        return;
+    }
+
+    const { recurso, data, hora } = dadosDoForm(formPesquisa);
+    if (!recurso || !data || !hora) {
+        mostrarToast("Preencha recurso, data e horário", 'warn');
+        return;
+    }
+
+    ultimoFiltroPesquisa = { recurso, data, hora };
+    const quando = new Date(`${data}T${hora}`).toLocaleDateString('pt-br');
+
+    mostrarToast(`Disponível: ${recurso} em ${quando}`);
+    location.hash = '#secSolicitar';
+    atualizarMenuAtivo();
+});
