@@ -104,7 +104,6 @@ function rolarParaRapido() {
             campoFim.style.borderColor = 'red';
             valido = false;
         }
-
         if (hInicio && hFim && hFim <= hInicio) {
             campoInicio.style.borderColor = 'red';
             campoFim.style.borderColor = 'red';
@@ -113,7 +112,6 @@ function rolarParaRapido() {
             mostrarToast("O horário final precisa ser maior que o horário inicial", 'warn');
             return;
         }
-
         if (!valido) {
             mostrarToast("Por favor, preencha todos os campos obrigatórios", 'warn');
             return;
@@ -225,5 +223,95 @@ formPesquisa?.addEventListener('submit', (e) => {
 
     mostrarToast(`Disponível: ${recurso} em ${quando}`);
     location.hash = '#secSolicitar';
+    atualizarMenuAtivo();
+});
+
+// 3. Solicitar reserva
+
+// Aplica RN simulada e registra no histórico
+formSolicitar?.addEventListener('submit', (e) => {
+    e.preventDefault;
+
+    if (!usuarioAtual) {
+        mostrarToast("Faça login antes de solicitar", 'warn');
+
+        location.hash = '#secLogin';
+
+        atualizarMenuAtivo();
+        return;
+    }
+    if (!ultimoFiltroPesquisa) {
+        mostrarToast("Pesquise a disponibilidade antes de solicitar", 'warn');
+
+        location.hash = '#secPesquisa';
+
+        atualizarMenuAtivo();
+        return;
+    }
+
+    const { justificativa } = dadosDoForm(formSolicitar);
+    if (!justificativa) {
+        mostrarToast("Descreva a justificativa", 'warn');
+        return;
+    }
+
+    // RN4 - Se login contêm "prof", aprova automáticamente
+    const status = usuarioAtual.professor ? 'aprovada' : 'pendente';
+
+    const nova = {
+        ...ultimoFiltroPesquisa,
+        justificativa,
+        status,
+        autor: usuarioAtual.login
+    };
+
+    reservas.push(nova);
+    renderItemReserva(nova);
+
+    mostrarToast(status === 'aprovada' ? "Reserva aprovada automáticamente" : "Reserva enviada para análise");
+
+    formSolicitar.reset()
+    location.hash = '#secHistorico';
+
+    atualizarMenuAtivo();
+});
+
+// 4. Renderização do histórico
+
+// Lista simples(Sem <template> para que não quebre o HTML)
+function renderItemReserva({ recurso, data, hora, justificativa, status }) {
+    if (!listaReservas) return;
+
+    const li = document.createElement('li');
+    const quando = new Date(`${data}T${hora}`).toLocaleString('pt-br');
+
+    li.innerHTML = `
+        <span><strong>${recurso}</strong> - ${quando}</span>
+        <span>${status === 'aprovada' ? "Aprovada" : status === "cancelada" ? 'Cancelada' : "Pendente"}</span>
+    `;
+
+    // Clique para cancelar
+    li.addEventListener('click', () => {
+        // Impedir recancelamento
+        if (li.dataset.status === 'cancelada') return
+
+        li.dataset.status = 'cancelada';
+        li.lastElementChild.textContent = 'Cancelada';
+
+        mostrarToast("Reserva cancelada", warn);
+    });
+
+    listaReservas.appendChild(li);
+}
+
+/*
+==========================================================================
+======                  Ajustes finais de Arranque                  ======
+====== -------------------------------------------------------------======
+====== Por que? Garantir que link ativo apareça já na carga inicial ======
+==========================================================================
+*/
+
+document.addEventListener('DOMContentLoaded', () => {
     atualizarMenuAtivo();
 });
