@@ -178,6 +178,31 @@ const formPesquisa = document.getElementById('formPesquisa');
 const formSolicitar = document.getElementById('formSolicitar');
 const listaReservas = document.getElementById('listaReservas');
 
+/*
+=====================================
+====== SPRINT 3 - Regras novas ======
+=====================================
+*/
+
+// Adiciona 1h ao horário 'HH:MM' para fim padrão
+function adicionar1Hora(hhmm) {
+    const [h, m] = (hhmm || "00:00").split(":").map(Number);
+    const d = new Date();
+
+    d.setHours(h, m, 0, 0);
+    d.setMinutes(d.getMinutes() + 60);
+
+    return d.toTimeString().slice(0, 5);
+}
+
+// Adiciona RN2 (Detecção de conflitos)
+
+// Não há conflito, quando um termina antes do outro terminar
+function hConflito({ recursoId, data, horaInicio, horaFim }) {
+    const existentes = repo.get(DB_keys.reservas).filter(r => r.recursoId === recursoId && r.data === data && r.status !== 'cancelada');
+    return existentes.some(r => !(r.horaFim <= horaInicio || r.horaInicio >= horaFim));
+}
+
 // 1. Login
 
 // Valida credenciais simples e define perfil simulado
