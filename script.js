@@ -199,8 +199,41 @@ function adicionar1Hora(hhmm) {
 
 // Não há conflito, quando um termina antes do outro terminar
 function hConflito({ recursoId, data, horaInicio, horaFim }) {
-    const existentes = repo.get(DB_keys.reservas).filter(r => r.recursoId === recursoId && r.data === data && r.status !== 'cancelada');
+    const existentes = repo.get(DB_KEYS.reservas).filter(r => r.recursoId === recursoId && r.data === data && r.status !== 'cancelada');
     return existentes.some(r => !(r.horaFim <= horaInicio || r.horaInicio >= horaFim));
+}
+
+// Render a partir do Banco (localStorage)
+function renderItemReservaPersistida(r, recursosMap = null) {
+    if (!listaReservas) return;
+
+    const recursos = recursosMap || Object.fromEntries(repo.get(DB_KEYS.recursos).map(rr => [rr.id, rr.nome]));
+    const quando = `${r.data.split("-").reverse().join('/')} - ${(r.horaInicio) - (r.horaFim)}`;
+    const li = document.createElement('li');
+    const simbolo = r.status === 'aprovada' ? 'ticado' : r.status === 'cancelada' ? 'xis' : 'ampulheta';
+
+    li.innerHTML = `
+        <span><strong>${recursos[r.recursoId] || r.recursoId}</strong> - ${quando}</span>
+        <span>${simbolo} ${r.status.charAt(0).toUpperCase() + r.status.slice(1)}</span>
+    `;
+
+    if (r.status === 'cancelada') {
+        li.setAttribute('aria-disabled', 'true');
+    }
+
+    // Cancelamento 'Click para cancelar'
+    li.addEventListener('click', () => {
+        if (r.status === 'cancelada') return;
+
+        r.status = 'cancelada';
+        repo.updateById(DB_KEYS.reservas, r.id, () => r);
+        li.lastElementChild.textContent = 'xis Cancelada';
+        li.setAttribute('aria-disabled', 'true')
+
+        mostrarToast("Reserva cancelada", 'warn');
+    });
+
+    listaReservas.appendChild(li);
 }
 
 // 1. Login
@@ -243,7 +276,7 @@ formPesquisa?.addEventListener('submit', (e) => {
         return;
     }
 
-    ultimoFiltroPesquisa = { recurso, data, hora };
+    ultimoFiltroPesquisa = { recurso: Number(recurso), data, hora }; // SPRINT 3 - Guardar ID
     const quando = new Date(`${data}T${hora}`).toLocaleDateString('pt-br');
 
     mostrarToast(`Disponível: ${recurso} em ${quando}`);
@@ -280,15 +313,32 @@ formSolicitar?.addEventListener('submit', (e) => {
         return;
     }
 
+    // SPRINT 3 - Monta objeto completo para persistência
+    const recursoId = Number(ultimoFiltroPesquisa.recurso);
+    const data = ultimoFiltroPesquisa.data;
+    const horaInicio = ultimoFiltroPesquisa.hora;
+    const horaFim = adicionar1Hora(horaInicio);
+
+    if (hConflito({ recursoId, data, horaInicio, horaFim })) {
+        mostrarToast("Conflito: Já existe reserva neste intervalo para este recurso", 'err');
+    }
+
     // RN4 - Se login contêm "prof", aprova automáticamente
     const status = usuarioAtual.professor ? 'aprovada' : 'pendente';
 
     const nova = {
-        ...ultimoFiltroPesquisa,
+        // ...ultimoFiltroPesquisa,
+        // SPRINT 3
+        id: Date.now(),
+        recursoId,
+        usuarioId: usuarioAtual.login,
         justificativa,
         status,
-        autor: usuarioAtual.login
+        // autor: usuarioAtual.login
     };
+
+    repo.push(DB_KEYS.reservas, nova); // Persistência
+    renderItemReservaPersistida(nova); // Atualização da UI
 
     reservas.push(nova);
     renderItemReserva(nova);
@@ -332,7 +382,7 @@ function renderItemReserva({ recurso, data, hora, justificativa, status }) {
 /*
 ==========================================================================
 ======                  Ajustes finais de Arranque                  ======
-====== -------------------------------------------------------------======
+====== ------------------------------------------------------------ ======
 ====== Por que? Garantir que link ativo apareça já na carga inicial ======
 ==========================================================================
 */
