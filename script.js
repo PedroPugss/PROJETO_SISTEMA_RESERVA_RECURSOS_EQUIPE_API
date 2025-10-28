@@ -288,7 +288,7 @@ formSolicitar?.addEventListener('submit', (e) => {
 document.addEventListener('DOMContentLoaded', () => {
     // 1 Garante que o seed e carregamentos básicos já ocorreram no storage.js
     if (typeof seedSeNecessario === 'function') seedSeNecessario();
-    // 2 NOVO: normaliza reservas antigas (migra campos e padroniza horas)
+    // 2 NOVO: Normaliza reservas antigas (migra campos e padroniza horas)
     if (typeof normalizarReservasAntigas === 'function') normalizarReservasAntigas();
 
     // 3 Atualiza menu (comportamento original)
