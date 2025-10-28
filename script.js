@@ -9,7 +9,7 @@ Mantém o Sprint 2 e adiciona persistência + conflitos
 =====================================================
 */
 
-/* TOAST (igual Sprint 2) */
+/* TOAST (Igual Sprint 2) */
 const $toast = document.getElementById('toast');
 let __toastTimer = null;
 function mostrarToast(mensagem, tipo = 'ok') {
@@ -106,7 +106,7 @@ SPRINT 3 – Regras novas
 =======================
 */
 
-/* SPRINT 3: adiciona 1h ao horário “HH:MM” para fim padrão */
+/* SPRINT 3: Adiciona 1h ao horário “HH:MM” para fim padrão */
 function adicionar1Hora(hhmm) {
     const [h, m] = (hhmm || '00:00').split(':').map(Number);
     const d = new Date(); d.setHours(h, m, 0, 0);
@@ -114,14 +114,14 @@ function adicionar1Hora(hhmm) {
     return d.toTimeString().slice(0, 5);
 }
 
-/* SPRINT 3: detecção de conflito (RN2). Não há conflito apenas quando um termina antes do outro começar. */
+/* SPRINT 3: Detecção de conflito (RN2). Não há conflito apenas quando um termina antes do outro começar. */
 function haConflito({ recursoId, data, horaInicio, horaFim }) {
     const existentes = repo.get(DB_KEYS.reservas)
         .filter(r => r.recursoId === recursoId && r.data === data && r.status !== 'cancelada');
     return existentes.some(r => !(r.horaFim <= horaInicio || r.horaInicio >= horaFim));
 }
 
-/* SPRINT 3: render a partir do “banco” (localStorage) */
+/* SPRINT 3: Render a partir do “banco” (localStorage) */
 function renderItemReservaPersistida(r, recursosMap = null) {
     if (!listaReservas) return;
 
@@ -158,7 +158,7 @@ FLUXO Sprint 2 (mantido) + persistência Sprint 3
 ================================================
 */
 
-// LOGIN (igual Sprint 2)
+// LOGIN (Igual Sprint 2)
 formLogin?.addEventListener('submit', (e) => {
     e.preventDefault();
 
@@ -186,7 +186,7 @@ formPesquisa?.addEventListener('submit', (e) => {
     
     if (!recurso || !data || !hora) { mostrarToast('Preencha recurso, data e horário.', 'warn'); return; }
     
-    ultimoFiltroPesquisa = { recurso: Number(recurso), data, hora };      // SPRINT 3: guarda id numérico
+    ultimoFiltroPesquisa = { recurso: Number(recurso), data, hora };
     const quando = new Date(`${data}T${hora}`).toLocaleString('pt-BR');
     
     mostrarToast(`Disponível: recurso ${recurso} em ${quando}.`);
@@ -219,7 +219,7 @@ formPesquisa?.addEventListener('submit', (e) => {
     const horaInicio = hora;
     const horaFim = adicionar1Hora(horaInicio);
 
-    // NOVO: checa conflito na etapa de pesquisa
+    // NOVO: Checa conflito na etapa de pesquisa
     if (haConflito({ recursoId, data, horaInicio, horaFim })) {
         mostrarToast('Indisponível: já existe reserva nesse intervalo.', 'err');
         return;
@@ -248,7 +248,7 @@ formSolicitar?.addEventListener('submit', (e) => {
 
     if (!justificativa) { mostrarToast('Descreva a justificativa.', 'warn'); return; }
 
-    // SPRINT 3: monta objeto completo para persistir
+    // SPRINT 3: Monta objeto completo para persistir
     const recursoId = Number(ultimoFiltroPesquisa.recurso);
     const data = ultimoFiltroPesquisa.data;
     const horaInicio = ultimoFiltroPesquisa.hora;
@@ -280,11 +280,11 @@ formSolicitar?.addEventListener('submit', (e) => {
     atualizarMenuAtivo();
 });
 
-/* 5) ARRANQUE: já feito em storage.js (seed/popular/carregar). Aqui mantemos apenas o destaque do menu na carga */
+/* 5) ARRANQUE: Já feito em storage.js (seed/popular/carregar). Aqui mantemos apenas o destaque do menu na carga */
 
-//document.addEventListener('DOMContentLoaded', atualizarMenuAtivo);
+// document.addEventListener('DOMContentLoaded', atualizarMenuAtivo);
 
-//CORREÇÃO SPRINT 3
+// CORREÇÃO SPRINT 3
 document.addEventListener('DOMContentLoaded', () => {
     // 1 Garante que o seed e carregamentos básicos já ocorreram no storage.js
     if (typeof seedSeNecessario === 'function') seedSeNecessario();
@@ -294,4 +294,3 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3 Atualiza menu (comportamento original)
     atualizarMenuAtivo();
 });
-
