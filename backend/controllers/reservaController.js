@@ -11,7 +11,7 @@ const reservaController = {
                 include: [{
                     model: Recurso,
                     as: 'recurso',
-                    attribute: ['nome']
+                    attributes: ['nome']
                 }],
                 order: [['startAt', 'DESC']]
             };
@@ -58,7 +58,7 @@ const reservaController = {
                     recursoId: recursoId,
                     status: { [Op.ne]: 'rejeitada' },
                     startAt: { [Op.lt]: endAt },
-                    endAt: { [Op.gt]: start }
+                    endAt: { [Op.gt]: startAt }
                 }
             });
 

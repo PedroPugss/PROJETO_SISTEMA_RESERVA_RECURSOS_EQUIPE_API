@@ -1,6 +1,6 @@
 const { Sequelize, ForeignKeyConstraintError } = require('sequelize');
 const path = require('path');
-const dbPath = process.env.DB_PATH || path.join(__dirname, '..', '');
+const dbPath = process.env.DB_PATH || path.join(__dirname, '..', 'database.sqlite');
 
 const sequelize = new Sequelize({
     dialect: 'sqlite',

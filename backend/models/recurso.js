@@ -1,4 +1,3 @@
-const { table } = require('console');
 const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {

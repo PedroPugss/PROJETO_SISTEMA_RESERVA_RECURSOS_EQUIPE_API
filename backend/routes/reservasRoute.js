@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const recursoController = require('../controllers/recursoController');
 
-router.get('/', recursoController.listarTodos);
-router.post('/', recursoController.criar);
+const reservaController = require('../controllers/reservaController');
+
+router.get('/', reservaController.listarTodos);
+router.post('/', reservaController.criar);
 
 module.exports = router;

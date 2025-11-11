@@ -5,7 +5,7 @@ const express = require('express');
 const cors = require('cors');
 
 // 2. Importações locais
-const { sequelize } = require('.models');
+const { sequelize } = require('./models');
 const recursosRoute = require('./routes/recursosRoute');
 const reservasRoutes = require('./routes/reservasRoute');
 
@@ -20,8 +20,9 @@ app.use(cors());
 app.use(express.json());
 
 // 6. Definimos as rotas da api
-app.use('api/recuros', recursosRoute);
-app.use('api/reservas', reservasRoutes);
+app.use('/api/recursos', recursosRoute);
+app.use('/api/reservas', reservasRoutes);
+
 app.get('/', (req, res) => {
     res.send("API do Sistema de Reservas: OK");
 });
@@ -30,7 +31,7 @@ sequelize.sync({
 }).then(() => {
     console.log("Banco de Dados conectado e Tabelas sincronizadas");
     app.listen(PORT, () => {
-        console.log(`Servidor rodando em http:localhost:${PORT}`);
+        console.log(`Servidor rodando em http://localhost:${PORT}`);
     });
 }).catch(err => {
     console.error("Erro ao conectar ou sincronizar o Banco de Dados", err);
